@@ -1,81 +1,29 @@
-default:
-  image: amazoncorretto:17.0.8@sha256:eaa4ff4026b888b602b9cef6875a7b763ab4b3076f1257c14237bd31bea54167
-  before_script:
-    - ': before_script'
-    - chmod +x mvnw
-    - export MAVEN_OPTS="-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/"
-
-# Static Application Security Testing (SAST) is a frequently used Application Security (AppSec) tool,
-# which scans an application’s source, binary, or byte code.
-# https://www.microfocus.com/en-us/what-is/sast
-include:
-  - template: Security/SAST.gitlab-ci.yml
-
-variables:
-  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
-  GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
-  SAST_JAVA_VERSION: "17" # Required by SAST scanning
+image: maven:3-jdk-11
 
 stages:
-  - test
   - build
+  - test
   - analysis
-  - deploy
-
-test:
-  stage: test
-  script:
-    - ./mvnw verify $MAVEN_OPTS
-    - cat target/site/jacoco/index.html | grep -o '<tfoot>.*</tfoot>'
-  coverage: '/Total.*?([0-9]{1,3})%/'
-  artifacts:
-    paths:
-      - target/site/jacoco/*
-    reports:
-      junit:
-        - "**/target/surefire-reports/TEST-*.xml"
-        - "**/target/failsafe-reports/TEST-*.xml"
-    expire_in: 1 hour
 
 build:
   stage: build
   script:
-    - ./mvnw clean package -DskipTests $MAVEN_OPTS
+    - mvn clean package -DskipTests
   artifacts:
     paths:
       - target/*.jar
-    expire_in: 1 hour
 
-sonarcloud-check:
-  stage: analysis
-  cache:
-    key: "${CI_JOB_NAME}"
-    paths:
-      - .sonar/cache
+test:
+  stage: test
   script:
-    - ./mvnw verify sonar:sonar -Dsonar.projectKey=ShowMeYourCodeYouTube_java-sorting-algorithms
-  only:
-    - merge_requests
-    - master
-
-jmh-benchmark:
-  stage: analysis
-  script:
-    - cp target/*-jar-with-dependencies.jar target/jmh-benchmark.jar
-    - java -cp target/jmh-benchmark.jar com.showmeyourcode.projects.algorithms.launcher.AlgorithmsMicrobenchmark
-
-pages:
-  stage: deploy
-  script:
-    - echo 'Cleaning old pages'
-    - rm -rf public
-    - ls -la
-    - mkdir -p public/test-report && cp -r target/site/jacoco/* public/test-report
-    - mkdir -p public/pitest-report && cp -r target/pit-reports/* public/pitest-report
-    - ls -la ./public
+    - mvn verify
+    - cat target/site/jacoco/index.html | grep -o '<tfoot>.*</tfoot>'
   artifacts:
-    paths:
-      - public
-    expire_in: 1 hour
-  only:
-    - master
+    when: always
+    reports:
+      junit: target/surefire-reports/TEST-*.xml
+
+analyze-source-code:
+  stage: analysis
+  script:
+    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
