@@ -1,8 +1,10 @@
 # Discovery Server
 
-[![pipeline status](https://gitlab.com/wallet-wise/discovery-server/badges/master/pipeline.svg)](https://gitlab.com/wallet-wise/discovery-server/-/commits/master)
 
-[![coverage report](https://gitlab.com/wallet-wise/discovery-server/badges/master/coverage.svg)](https://gitlab.com/wallet-wise/discovery-server/-/commits/master)
+[![pipeline status](https://gitlab.com/wallet-wise/discovery-server/badges/staging/pipeline.svg)](https://gitlab.com/wallet-wise/discovery-server/-/commits/staging)
+
+
+[![coverage report](https://gitlab.com/wallet-wise/discovery-server/badges/staging/coverage.svg)](https://gitlab.com/wallet-wise/discovery-server/-/commits/staging)
 
 
 ## Getting started
