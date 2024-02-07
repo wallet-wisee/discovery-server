@@ -1,34 +1,29 @@
+default:
+  image: amazoncorretto:17.0.8@sha256:eaa4ff4026b888b602b9cef6875a7b763ab4b3076f1257c14237bd31bea54167
+  before_script:
+    - ': before_script'
+    - chmod +x mvnw
+    - export MAVEN_OPTS="-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/"
+
+# Static Application Security Testing (SAST) is a frequently used Application Security (AppSec) tool,
+# which scans an application’s source, binary, or byte code.
+# https://www.microfocus.com/en-us/what-is/sast
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
 variables:
-  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
-  DOCKER_TLS_CERTDIR: "/certs"
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+  GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  SAST_JAVA_VERSION: "17" # Required by SAST scanning
 
-  MAVEN_OPTS: >-
-    -Dhttps.protocols=TLSv1.2
-    -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
-    -Dorg.slf4j.simpleLogger.showDateTime=true
-    -Djava.awt.headless=true
-
-  MAVEN_CLI_OPTS: >-
-    --batch-mode
-    --errors
-    --fail-at-end
-    --show-version
-    --no-transfer-progress
-    -DinstallAtEnd=true
-    -DdeployAtEnd=true
-
-image: maven:3.6.3-openjdk-17
 stages:
-  - build
   - test
-  - publish
+  - build
+  - analysis
+  - deploy
 
-cache:
-  paths:
-    - .m2/repository
-    - target
-
-test_job:
+test:
+  stage: test
   script:
     - ./mvnw verify $MAVEN_OPTS
     - cat target/site/jacoco/index.html | grep -o '<tfoot>.*</tfoot>'
@@ -51,7 +46,7 @@ mutation-test:
       - target/pit-reports/*
     expire_in: 1 hour
 
-build_job:
+build:
   stage: build
   script:
     - ./mvnw clean package -DskipTests $MAVEN_OPTS
@@ -60,4 +55,36 @@ build_job:
       - target/*.jar
     expire_in: 1 hour
 
+sonarcloud-check:
+  stage: analysis
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - ./mvnw verify sonar:sonar -Dsonar.projectKey=ShowMeYourCodeYouTube_java-sorting-algorithms
+  only:
+    - merge_requests
+    - master
 
+jmh-benchmark:
+  stage: analysis
+  script:
+    - cp target/*-jar-with-dependencies.jar target/jmh-benchmark.jar
+    - java -cp target/jmh-benchmark.jar com.showmeyourcode.projects.algorithms.launcher.AlgorithmsMicrobenchmark
+
+pages:
+  stage: deploy
+  script:
+    - echo 'Cleaning old pages'
+    - rm -rf public
+    - ls -la
+    - mkdir -p public/test-report && cp -r target/site/jacoco/* public/test-report
+    - mkdir -p public/pitest-report && cp -r target/pit-reports/* public/pitest-report
+    - ls -la ./public
+  artifacts:
+    paths:
+      - public
+    expire_in: 1 hour
+  only:
+    - master
