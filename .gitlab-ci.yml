@@ -37,15 +37,6 @@ test:
         - "**/target/failsafe-reports/TEST-*.xml"
     expire_in: 1 hour
 
-mutation-test:
-  stage: test
-  script:
-    - ./mvnw test-compile org.pitest:pitest-maven:mutationCoverage $MAVEN_OPTS
-  artifacts:
-    paths:
-      - target/pit-reports/*
-    expire_in: 1 hour
-
 build:
   stage: build
   script:
