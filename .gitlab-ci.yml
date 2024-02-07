@@ -1,0 +1,94 @@
+variables:
+  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
+  DOCKER_TLS_CERTDIR: "/certs"
+
+  MAVEN_OPTS: >-
+    -Dhttps.protocols=TLSv1.2
+    -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+    -Dorg.slf4j.simpleLogger.showDateTime=true
+    -Djava.awt.headless=true
+
+  MAVEN_CLI_OPTS: >-
+    --batch-mode
+    --errors
+    --fail-at-end
+    --show-version
+    --no-transfer-progress
+    -DinstallAtEnd=true
+    -DdeployAtEnd=true
+
+image: maven:3.6.3-openjdk-17
+stages:
+  - build
+  - test
+  - publish
+
+cache:
+  paths:
+    - .m2/repository
+    - target
+
+test_job:
+  script:
+    - ./mvnw verify $MAVEN_OPTS
+    - cat target/site/jacoco/index.html | grep -o '<tfoot>.*</tfoot>'
+  coverage: '/Total.*?([0-9]{1,3})%/'
+  artifacts:
+    paths:
+      - target/site/jacoco/*
+    reports:
+      junit:
+        - "**/target/surefire-reports/TEST-*.xml"
+        - "**/target/failsafe-reports/TEST-*.xml"
+    expire_in: 1 hour
+
+mutation-test:
+  stage: test
+  script:
+    - ./mvnw test-compile org.pitest:pitest-maven:mutationCoverage $MAVEN_OPTS
+  artifacts:
+    paths:
+      - target/pit-reports/*
+    expire_in: 1 hour
+
+build_job:
+  stage: build
+  script:
+    - ./mvnw clean package -DskipTests $MAVEN_OPTS
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 hour
+
+sonarcloud-check:
+  stage: analysis
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - ./mvnw verify sonar:sonar -Dsonar.projectKey=ShowMeYourCodeYouTube_java-sorting-algorithms
+  only:
+    - merge_requests
+    - master
+
+jmh-benchmark:
+  stage: analysis
+  script:
+    - cp target/*-jar-with-dependencies.jar target/jmh-benchmark.jar
+    - java -cp target/jmh-benchmark.jar com.showmeyourcode.projects.algorithms.launcher.AlgorithmsMicrobenchmark
+
+pages:
+  stage: deploy
+  script:
+    - echo 'Cleaning old pages'
+    - rm -rf public
+    - ls -la
+    - mkdir -p public/test-report && cp -r target/site/jacoco/* public/test-report
+    - mkdir -p public/pitest-report && cp -r target/pit-reports/* public/pitest-report
+    - ls -la ./public
+  artifacts:
+    paths:
+      - public
+    expire_in: 1 hour
+
