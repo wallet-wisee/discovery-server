@@ -62,7 +62,3 @@ sonarcloud-check:
       - .sonar/cache
   script:
     - mvn verify sonar:sonar -Dsonar.projectKey=wallet-wise_discovery-server
-  only:
-    - merge_requests
-    - master
-    - develop
