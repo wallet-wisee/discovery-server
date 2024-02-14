@@ -21,17 +21,17 @@ variables:
 image: maven:3.6.3-openjdk-17
 
 stages:
-  - build
+  - compile
   - test
-  - publish
+  - build
 
 cache:
   paths:
     - .m2/repository
     - target
 
-build:
-  stage: build
+compile:
+  stage: compile
   script:
     - mvn clean package -DskipTests
   artifacts:
@@ -63,15 +63,15 @@ sonarcloud-check:
   script:
     - mvn verify sonar:sonar -Dsonar.projectKey=wallet-wise_discovery-server
 
-publish:
-  image: docker:19.03.12
-  stage: publish
+build:
+  image: docker:latest
+  stage: build
   services:
-    - docker:19.03.12-dind
+    - docker:dind
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   before_script:
-    - docker login -u $CI_DOCKER_HUB_USER -p $CI_DOCKER_HUB_PASSWORD
+    - docker login -u $CI_DOCKER_HUB_USER -p $CI_DOCKER_HUB_PASSWORD $CI_DOCKER_HUB_URL
   script:
     - docker info
     - docker build -t $IMAGE_TAG .
