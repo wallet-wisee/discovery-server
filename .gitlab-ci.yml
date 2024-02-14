@@ -65,7 +65,7 @@ sonarcloud-check:
 
 publish:
   image: docker:19.03.12
-  stage: build
+  stage: publish
   services:
     - docker:19.03.12-dind
   script:
