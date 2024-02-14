@@ -64,10 +64,9 @@ sonarcloud-check:
     - mvn verify sonar:sonar -Dsonar.projectKey=wallet-wise_discovery-server
 
 publish:
-  image: docker
-  stage: publish
-  before_script:
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin <<<$CI_REGISTRY_PASSWORD
-    
+  image: docker:19.03.12
+  stage: build
+  services:
+    - docker:19.03.12-dind
   script:
     - docker info
