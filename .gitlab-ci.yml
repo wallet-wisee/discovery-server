@@ -23,7 +23,7 @@ image: maven:3.6.3-openjdk-17
 stages:
   - build
   - test
-  - analysis
+  - publish
 
 cache:
   paths:
@@ -62,3 +62,11 @@ sonarcloud-check:
       - .sonar/cache
   script:
     - mvn verify sonar:sonar -Dsonar.projectKey=wallet-wise_discovery-server
+
+publish:
+  image: docker
+  stage: publish
+  before_script:
+    - docker login registry.gitlab.com -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_TOKEN"
+  script:
+    - docker info
