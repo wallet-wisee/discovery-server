@@ -67,6 +67,6 @@ publish:
   image: docker
   stage: publish
   before_script:
-    - docker login registry.gitlab.com -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_TOKEN"
+    - docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_REGISTRY_TOKEN
   script:
     - docker info
