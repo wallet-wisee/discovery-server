@@ -24,6 +24,7 @@ stages:
   - compile
   - test
   - build
+  - deploy
 
 cache:
   paths:
@@ -77,3 +78,13 @@ build:
   only: 
     - master
     - staging
+  
+deploy:
+  image: mcr.microsoft.com/azure-cli:latest
+  stage: deploy
+  script: 
+    - az
+    - az aks --help
+    - kubectl version
+  only:
+    stagging
