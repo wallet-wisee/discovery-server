@@ -38,6 +38,6 @@ deploy:
     - az
     - az aks --help
     - az aks install-cli
-    - kubectl 
+    - kubectl
   only:
     - staging
