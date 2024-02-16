@@ -25,7 +25,7 @@ stages:
   - test
   - build
   - deploy
-  
+
 compile:
   stage: compile
   script:
@@ -83,13 +83,13 @@ deploy:
   image: mcr.microsoft.com/azure-cli:latest
   stage: deploy
   before_script:
+    - export  IMAGE_TAG=$CI_COMMIT_SHORT_SHA
     - az login --username $AZURE_USER --password $AZURE_PASSWORD
   script: 
-    - az
-    - az aks --help
     - az aks install-cli
     - kubectl
     - az aks get-credentials -n wallet-wise-dev-test -g wallet-wise-dev-test --admin
-    - kubectl get nodes
+    - sed -i 's/<IMAGE_TAG>/'$IMAGE_TAG'/g' deployment.yml
+    - kubectl apply deployment.yml
   only:
     - staging
