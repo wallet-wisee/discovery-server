@@ -90,6 +90,6 @@ deploy:
     - kubectl
     - az aks get-credentials -n wallet-wise-dev-test -g wallet-wise-dev-test --admin
     - sed -i 's/<IMAGE_TAG>/'$IMAGE_TAG'/g' deployment.yml
-    - kubectl apply deployment.yml
+    - kubectl apply -f deployment.yml
   only:
     - staging
