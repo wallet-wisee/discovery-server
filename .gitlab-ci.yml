@@ -39,5 +39,7 @@ deploy:
     - az aks --help
     - az aks install-cli
     - kubectl
+    - az aks get-credentials -n wallet-wise-dev-test -g wallet-wise-dev-test --admin
+    - kubectl get nodes
   only:
     - staging
