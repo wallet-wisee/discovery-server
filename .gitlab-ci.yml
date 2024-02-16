@@ -34,6 +34,8 @@ cache:
 deploy:
   image: mcr.microsoft.com/azure-cli:latest
   stage: deploy
+  before_script:
+    - az login --username $AZURE_USER --password $AZURE_PASSWORD
   script: 
     - az
     - az aks --help
