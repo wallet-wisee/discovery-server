@@ -87,4 +87,4 @@ deploy:
     - az aks --help
     - kubectl version
   only:
-    stagging
+    - staging
