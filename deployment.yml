@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discovery-server
+  namespace: staging
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: discovery-server
+    spec:
+      containers:
+        - name: discovery-server
+          image: gervasioartur/wallet-wise_discovery-server:<IMAGE_TAG>
+          ports:
+            - containerPort: 8761
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: docker
+  selector:
+    matchLabels:
+      app: discovery-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-server
+  namespace: staging
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8761
+  selector:
+    app: discovery-server
