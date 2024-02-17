@@ -55,6 +55,10 @@ test:
         - "**/target/surefire-reports/TEST-*.xml"
         - "**/target/failsafe-reports/TEST-*.xml"
     expire_in: 1 hour
+  only: 
+    - master
+    - staging
+
     
 sonarcloud-check:
   stage: test
@@ -64,6 +68,9 @@ sonarcloud-check:
       - .sonar/cache
   script:
     - mvn verify sonar:sonar -Dsonar.projectKey=wallet-wise_discovery-server
+  only: 
+    - master
+    - staging
 
 build:
   image: docker:latest
