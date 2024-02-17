@@ -28,7 +28,7 @@ metadata:
   name: discovery-server
   namespace: staging
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - port: 8761
   selector:
