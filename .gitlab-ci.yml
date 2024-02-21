@@ -86,6 +86,8 @@ build:
   only: 
     - master
     - staging
+  tags:
+    - build
   
 deploy:
   image: mcr.microsoft.com/azure-cli:latest
