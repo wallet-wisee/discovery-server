@@ -94,7 +94,7 @@ deploy:
     - az login --username $AZURE_USER --password $AZURE_PASSWORD
   script: 
     - az aks install-cli
-    - az aks get-credentials -n $AKS_RESOURCE_GROUP -g $AKS_RESOURCE_GROUP --admin
+    - az aks get-credentials -n $AKS_RESOURCE_GROUP -g $AKS_CLUSTER_NAME --admin
     - sed -i 's/<IMAGE_TAG>/'$IMAGE_TAG'/g' deployment.yml
     - kubectl apply -f deployment.yml
   only:
