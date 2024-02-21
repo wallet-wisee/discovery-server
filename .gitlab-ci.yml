@@ -94,8 +94,7 @@ deploy:
     - az login --username $AZURE_USER --password $AZURE_PASSWORD
   script: 
     - az aks install-cli
-    - kubectl
-    - az aks get-credentials -n wallet-wise-dev-test -g wallet-wise-dev-test --admin
+    - az aks get-credentials -n $AKS_RESOURCE_GROUP -g $AKS_RESOURCE_GROUP --admin
     - sed -i 's/<IMAGE_TAG>/'$IMAGE_TAG'/g' deployment.yml
     - kubectl apply -f deployment.yml
   only:
