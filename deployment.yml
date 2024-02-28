@@ -33,3 +33,5 @@ spec:
     - port: 8761
   selector:
     app: discovery-server
+
+    
