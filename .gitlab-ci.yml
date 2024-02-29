@@ -83,9 +83,7 @@ build:
   only: 
     - master
     - staging
-  tags:
-    - build
-  
+
 deploy:
   image: mcr.microsoft.com/azure-cli:latest
   stage: deploy
@@ -100,3 +98,5 @@ deploy:
     - kubectl apply -f deployment.yml
   only:
     - staging
+  tags:
+    - deploy
