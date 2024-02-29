@@ -97,6 +97,4 @@ deploy:
     - sed -i 's/<IMAGE_TAG>/'$IMAGE_TAG'/g' deployment.yml
     - kubectl apply -f deployment.yml
   only:
-    - staging
-  tags:
-    - deploy
+    - master
